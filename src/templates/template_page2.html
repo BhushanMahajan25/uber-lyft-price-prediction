@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {font-family: Arial, Helvetica, sans-serif;}
+* {box-sizing: border-box;}
+
+input[type=text], select, textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  margin-top: 6px;
+  margin-bottom: 16px;
+  resize: vertical;
+}
+
+input[type=submit] {
+  background-color: #0192a5;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+input[type=submit]:hover {
+  background-color: #2c7575;
+}
+
+.container {
+  border-radius: 5px;
+  background-color: #f2f2f2;
+  padding: 20px;
+}
+
+form .btn {
+        outline: none;
+        border: none;
+        cursor: pointer;
+        display: inline-block;
+        margin: 0 auto;
+        padding: 0.9rem 2.5rem;
+        text-align: center;
+        background-color: rgb(0, 81, 255);
+        color: #fff;
+        border-radius: 4px;
+        box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.16);
+        font-size: 17px;
+      }
+
+</style>
+</head>
+<body>
+
+<h3>Hi {{data.name}}, Welcome!</h3>
+
+<div class="container">
+  <form action="{{ url_for("getCabPrice")}}" method="post">
+    <label for="source">Source</label>
+    <input type="text" id="source" name="Source" placeholder="From where..">
+
+    <label for="destination">Destination</label>
+    <input type="text" id="destination" name="Destination" placeholder="Where to..">
+
+    <label for="uber-cab-type">Uber Cab Type</label>
+    <select id="uber-cab-type" name="uber-cab-type">
+      <option value="Black">Black</option>
+      <option value="Black-SUV">Black SUV</option>
+      <option value="UberPool">Uber Pool</option>
+      <option value="UberX">Uber X</option>
+      <option value="UberXL">Uber XL</option>
+      <option value="WAV">WAV</option>
+    </select>
+
+    <label for="lyft-cab-type">Lyft Cab Type</label>
+    <select id="lyft-cab-type" name="lyft-cab-type">
+      <option value="Lux">Lux</option>
+      <option value="Lux-Black">Lux Black</option>
+      <option value="Lux-Black-XL">Lux Black XL</option>
+      <option value="Lyft">Lyft</option>
+      <option value="Lyft-XL">Lyft XL</option>
+      <option value="Shared">Shared</option>
+    </select>
+    
+    <br>
+    <button type="submit">Get Cab Price </button>
+
+    <br>
+    <br>
+
+    <br>
+        <br>
+
+</form>
+        <button class="btn" onclick="window.location.href='/logout'">Log Out</button>
+        
+</div>
+
+</body>
+</html>

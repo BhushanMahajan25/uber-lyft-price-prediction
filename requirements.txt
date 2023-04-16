@@ -1,0 +1,15 @@
+authlib
+flask-login
+flask
+googlemaps
+geopy
+requests
+numpy
+openweathermap
+pandas
+pytest
+setuptools
+scikit-learn
+itsdangerous
+oauthlib
+python-dotenv
