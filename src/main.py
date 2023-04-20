@@ -7,10 +7,8 @@ the UI, the API calls and the machine learning models
 import sys
 sys.path.append("..")
 
-import requests
 import pandas as pd
 from datetime import timedelta
-from urllib.parse import quote_plus, urlencode
 from flask import Flask, render_template, url_for, redirect, request, session
 from authlib.integrations.flask_client import OAuth, OAuthError
 from flask_login import (
@@ -23,10 +21,10 @@ from flask_login import (
 from os import environ as env
 from dotenv import load_dotenv, find_dotenv
 
-# from model_scripts.surge_inference import SurgePriceClassifier
-# from model_scripts.dynamic_pricing_inference import CabPricePredictor
-# from utils.geospatial_information import GeoSpatialData
-# from utils.weather_information import weather_information
+from model.inference.surge_inference import SurgePriceClassifier
+from model.inference.dynamic_price_inference import CabPricePredictor
+from utils.geospatial_data import GeoSpatialData
+from utils.weather_data import weather_information
 from utils.User import User
 
 ENV_FILE = find_dotenv()
@@ -36,8 +34,7 @@ if ENV_FILE:
 '''
 Required Flask application, Oauth, Session Management Initializations
 '''
-app = Flask(__name__, static_url_path='', static_folder='build',
-            template_folder='templates')
+app = Flask(__name__, static_url_path='', static_folder='build', template_folder='templates')
 
 oauth = OAuth(app)
 
@@ -186,11 +183,10 @@ def getCabPrice():
     uber_cab_type = request.form.get('uber-cab-type')
     lyft_cab_type = request.form.get('lyft-cab-type')
 
-    # geoloc = GeoSpatialData(source, destination)
-    # geolocation_df = geoloc.get_location()
-
-    # distance = geoloc.get_distance()
-    # estimated_time = geoloc.get_duration()
+    geoloc = GeoSpatialData(source, destination)
+    geolocation_df = geoloc.get_location()
+    distance = geoloc.get_distance()
+    estimated_time = geoloc.get_duration()
 
     uber_original_surge = 1.0   # Dummy surge value for feedback
     lyft_original_surge = 1.0   # Dummy surge value for feedback
@@ -198,13 +194,13 @@ def getCabPrice():
     '''
     Surge price classification model Inference
     '''
-    # surge_inference_df = weather_information(
-    #     geolocation_df['source_lat'][0], geolocation_df['source_long'][0]
-    # )
+    surge_inference_df = weather_information(
+        geolocation_df['source_lat'][0], geolocation_df['source_long'][0]
+    )
 
-    # surge_inference_df['surge_mult'] = [(uber_original_surge + lyft_original_surge) / 2]
-    # surge_calculator = SurgePriceClassifier(surge_inference_df)
-    # surge_multiplier = surge_calculator.surge_prediction_model()
+    surge_inference_df['surge_mult'] = [(uber_original_surge + lyft_original_surge) / 2]
+    surge_calculator = SurgePriceClassifier(surge_inference_df)
+    surge_multiplier = surge_calculator.surge_prediction_model()
 
     uber_price = 20   # Dummy dynamic price for feedback
     lyft_price = 20   # Dummy dynamic price for feedback
@@ -212,17 +208,17 @@ def getCabPrice():
     '''
     Cab Price Model inference
     '''
-    # cab_price_inference_df = pd.DataFrame({
-    #     'source_lat': [geolocation_df['source_lat'][0]],
-    #     'source_long': [geolocation_df['source_long'][0]],
-    #     'dest_lat': [geolocation_df['dest_lat'][0]],
-    #     'dest_long': [geolocation_df['dest_long'][0]],
-    #     'distance': [distance], 'surge_multiplier': [surge_multiplier],
-    #     'uber_cab_type': [uber_cab_type], 'lyft_cab_type': [lyft_cab_type],
-    #     'uber_price': [uber_price], 'lyft_price': [lyft_price]})
+    cab_price_inference_df = pd.DataFrame({
+        'source_lat': [geolocation_df['source_lat'][0]],
+        'source_long': [geolocation_df['source_long'][0]],
+        'dest_lat': [geolocation_df['dest_lat'][0]],
+        'dest_long': [geolocation_df['dest_long'][0]],
+        'distance': [distance], 'surge_multiplier': [surge_multiplier],
+        'uber_cab_type': [uber_cab_type], 'lyft_cab_type': [lyft_cab_type],
+        'uber_price': [uber_price], 'lyft_price': [lyft_price]})
 
-    # cab_price_object = CabPricePredictor(cab_price_inference_df)
-    # uber_predicted_price, lyft_predicted_price = cab_price_object.cab_price_prediction()
+    cab_price_object = CabPricePredictor(cab_price_inference_df)
+    uber_predicted_price, lyft_predicted_price = cab_price_object.cab_price_prediction()
 
     kilometers_to_miles = 0.621371
 
@@ -233,9 +229,9 @@ def getCabPrice():
     #     'distance': round(distance * kilometers_to_miles, 2)}
     
     result = {
-        'uber_price': 20,
-        'lyft_price': 21,
-        'estimated_time': 15,
+        'uber_price': uber_predicted_price,
+        'lyft_price': lyft_predicted_price,
+        'estimated_time': estimated_time,
         'distance': round(10 * kilometers_to_miles, 2)}
 
     return render_template('final_page.html', result=result)
